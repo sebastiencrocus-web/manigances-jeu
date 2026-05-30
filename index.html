@@ -57,33 +57,20 @@ fsBtn.addEventListener('click',()=>{
 });
 
 // ── Music ────────────────────────────────────────────────────
-const musicBtn=document.getElementById('musicBtn');
-let AC=null,MG=null,musicOn=false,musicReady=false,schedLoop=null;
-const Q=60/130,E=Q/2;
-const fn={c3:130.81,d3:146.83,e3:164.81,f3:174.61,g3:196,a3:220,c5:523.25,d5:587.33,e5:659.25,f5:698.46,g5:784,a5:880,b5:987.77,c6:1046.5};
-const MEL=[[fn.e5,E],[fn.g5,E],[fn.a5,Q],[fn.g5,E],[fn.e5,E],[fn.c5,Q],[fn.d5,E],[fn.e5,E],[fn.g5,Q],[fn.e5,Q],[fn.d5,Q],[fn.g5,E],[fn.a5,E],[fn.b5,Q],[fn.a5,E],[fn.g5,E],[fn.e5,Q],[fn.g5,E],[fn.a5,E],[fn.g5,Q],[fn.f5,E],[fn.e5,E],[fn.d5,Q],[fn.c6,Q],[fn.b5,E],[fn.a5,E],[fn.g5,Q],[fn.a5,E],[fn.b5,E],[fn.c6,Q],[fn.a5,Q],[fn.g5,Q],[fn.e5,Q],[fn.g5,E],[fn.a5,E],[fn.g5,E],[fn.e5,E],[fn.d5,Q],[fn.e5,E],[fn.g5,E],[fn.a5,Q],[fn.g5,Q],[fn.e5,Q],[0,Q]];
-const BSS=[[fn.c3,Q*2],[fn.g3,Q*2],[fn.a3,Q*2],[fn.f3,Q*2],[fn.c3,Q*2],[fn.g3,Q*2],[fn.d3,Q*2],[fn.g3,Q*2],[fn.c3,Q*2],[fn.e3,Q*2],[fn.f3,Q*2],[fn.g3,Q*2],[fn.c3,Q*2],[fn.g3,Q*2],[fn.f3,Q*2],[fn.c3,Q*2]];
-const LDUR=MEL.reduce((s,[,d])=>s+d,0);
-function pNote(f,t,dur,type,vol){if(!f||!AC)return;const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(0.001,t+dur);o.connect(g);g.connect(MG);o.start(t);o.stop(t+dur+0.02);}
-function pKick(t){if(!AC)return;const o=AC.createOscillator(),g=AC.createGain();o.frequency.setValueAtTime(200,t);o.frequency.exponentialRampToValueAtTime(30,t+0.15);g.gain.setValueAtTime(0.8,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.15);o.connect(g);g.connect(MG);o.start(t);o.stop(t+0.2);}
-function playLoop(t){let mt=t;MEL.forEach(([f,d])=>{pNote(f,mt,d*0.85,'square',0.35);mt+=d;});let bt=t;BSS.forEach(([f,d])=>{pNote(f,bt,d*0.7,'triangle',0.4);bt+=d;});for(let i=0;i<LDUR-0.01;i+=Q*2)pKick(t+i);}
-function scheduleMusic(){if(!musicOn||!AC)return;playLoop(AC.currentTime+0.05);schedLoop=setTimeout(scheduleMusic,(LDUR-0.1)*1000);}
-function initMusic(){
-  if(musicReady)return;musicReady=true;
-  AC=new(window.AudioContext||window.webkitAudioContext)();
-  MG=AC.createGain();MG.gain.value=0.45;MG.connect(AC.destination);
-  try{const b=AC.createBuffer(1,1,22050),s=AC.createBufferSource();s.buffer=b;s.connect(AC.destination);s.start(0);}catch(e){}
-  musicOn=true;
-  if(AC.state==='running')scheduleMusic();else AC.resume().then(scheduleMusic);
-  musicBtn.textContent='🔊';
-}
-document.addEventListener('visibilitychange',()=>{if(AC&&document.visibilityState==='visible')AC.resume();});
+const bgMusic=new Audio('https://opengameart.org/sites/default/files/funk_0.ogg');
+bgMusic.loop=true;
+let musicOn=false;
+
 musicBtn.addEventListener('click',()=>{
-  if(!musicReady){initMusic();return;}
-  musicOn=!musicOn;
-  musicBtn.textContent=musicOn?'🔊':'🔇';
-  if(musicOn){MG.gain.setTargetAtTime(0.45,AC.currentTime,0.1);scheduleMusic();}
-  else{MG.gain.setTargetAtTime(0,AC.currentTime,0.1);clearTimeout(schedLoop);}
+  if(!musicOn){
+    bgMusic.play().then(()=>{musicOn=true;musicBtn.textContent='🔊';}).catch(()=>{});
+  } else {
+    bgMusic.pause();musicOn=false;musicBtn.textContent='🔇';
+  }
+});
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='hidden'&&musicOn)bgMusic.pause();
+  else if(document.visibilityState==='visible'&&musicOn)bgMusic.play();
 });
 
 // ── Game ─────────────────────────────────────────────────────
