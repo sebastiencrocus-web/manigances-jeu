@@ -23,18 +23,10 @@
   }
   #fsBtn.fake-fs{position:fixed!important;bottom:14px!important;right:14px!important;}
   @media (hover:none),(pointer:coarse){#fsBtn{display:block;}}
-  #musicBtn{
-    position:absolute;bottom:14px;right:60px;
-    background:rgba(0,0,0,0.45);border:1px solid rgba(200,185,154,0.35);
-    color:#C8A355;font-size:17px;width:38px;height:38px;border-radius:7px;
-    cursor:pointer;line-height:38px;text-align:center;z-index:10000;display:block;
-  }
-  #musicBtn.fake-fs{position:fixed!important;bottom:14px!important;right:60px!important;}
   :fullscreen body,:-webkit-full-screen body{background:#000;}
 </style>
 </head>
 <body>
-<button id="musicBtn" title="Musique">🔊</button>
 <button id="fsBtn" title="Plein écran">⛶</button>
 <canvas id="gc"></canvas>
 <script>
@@ -654,83 +646,7 @@ function gpos(e){
   return{x:(s.clientX-r.left)*sx,y:(s.clientY-r.top)*sy};
 }
 function handleDown(e){
-  if(gs==='gameover'){// ── Music ────────────────────────────────────────────────────
-let AC=null,MG=null,musicOn=false,musicReady=false,loopNext=0,loopTmr=null;
-const BPM_M=132,EM=60/(BPM_M*2);
-const NM={
-  C3:130.81,D3:146.83,E3:164.81,F3:174.61,G3:196,A3:220,B3:246.94,
-  C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:784,A5:880,B5:987.77,C6:1046.5,R:0
-};
-const MEL=[
-  [NM.E5,1],[NM.G5,1],[NM.A5,2],[NM.G5,1],[NM.E5,1],[NM.C5,2],
-  [NM.D5,1],[NM.E5,1],[NM.G5,2],[NM.E5,2],[NM.D5,2],
-  [NM.G5,1],[NM.A5,1],[NM.B5,2],[NM.A5,1],[NM.G5,1],[NM.E5,2],
-  [NM.G5,1],[NM.A5,1],[NM.G5,2],[NM.F5,1],[NM.E5,1],[NM.D5,2],
-  [NM.C6,2],[NM.B5,1],[NM.A5,1],[NM.G5,2],[NM.A5,1],[NM.B5,1],
-  [NM.C6,2],[NM.A5,2],[NM.G5,2],[NM.E5,2],
-  [NM.G5,1],[NM.A5,1],[NM.G5,1],[NM.E5,1],[NM.D5,2],[NM.E5,1],[NM.G5,1],
-  [NM.A5,2],[NM.G5,2],[NM.E5,2],[NM.R,2],
-];
-const BSS=[
-  [NM.C3,4],[NM.G3,4],[NM.A3,4],[NM.F3,4],
-  [NM.C3,4],[NM.G3,4],[NM.D3,4],[NM.G3,4],
-  [NM.C3,4],[NM.E3,4],[NM.F3,4],[NM.G3,4],
-  [NM.C3,4],[NM.G3,4],[NM.F3,4],[NM.C3,4],
-];
-const LDUR=MEL.reduce((s,[,d])=>s+d,0)*EM;
-
-function pNote(f,t,d,type,vol){
-  if(!f||!AC)return;
-  const o=AC.createOscillator(),g=AC.createGain();
-  o.type=type;o.frequency.value=f;
-  const rel=Math.min(0.08,d*0.15);
-  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+0.012);
-  g.gain.setValueAtTime(vol,t+d-rel);g.gain.linearRampToValueAtTime(0,t+d);
-  o.connect(g);g.connect(MG);o.start(t);o.stop(t+d+0.01);
-}
-function pKick(t){
-  if(!AC)return;
-  const o=AC.createOscillator(),g=AC.createGain();
-  o.frequency.setValueAtTime(160,t);o.frequency.exponentialRampToValueAtTime(40,t+0.1);
-  g.gain.setValueAtTime(0.35,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.12);
-  o.connect(g);g.connect(MG);o.start(t);o.stop(t+0.14);
-}
-function schedMusic(st){
-  let t=st;
-  MEL.forEach(([f,d])=>{pNote(f,t,d*EM*0.88,'square',0.38);t+=d*EM;});
-  t=st;
-  BSS.forEach(([f,d])=>{pNote(f,t,d*EM*0.72,'triangle',0.32);t+=d*EM;});
-  for(let i=0;i*EM*4<LDUR+0.01;i++)pKick(st+i*EM*4);
-}
-function loopMusic(){
-  const now=AC.currentTime;
-  loopNext=Math.max(now+0.05,loopNext);
-  schedMusic(loopNext);loopNext+=LDUR;
-  loopTmr=setTimeout(loopMusic,Math.max(100,(loopNext-now-0.4)*1000));
-}
-function initMusic(){
-  if(musicReady)return;musicReady=true;
-  AC=new(window.AudioContext||window.webkitAudioContext)();
-  MG=AC.createGain();MG.gain.value=0.15;MG.connect(AC.destination);
-  musicOn=true;
-  AC.resume().then(()=>{loopNext=0;loopMusic();});
-  document.getElementById('musicBtn').textContent='🔊';
-}
-
-// Résume le contexte si iOS le suspend en arrière-plan
-document.addEventListener('visibilitychange',()=>{
-  if(AC&&document.visibilityState==='visible')AC.resume();
-});
-
-const musicBtn=document.getElementById('musicBtn');
-musicBtn.addEventListener('click',()=>{
-  if(!musicReady){initMusic();return;}
-  musicOn=!musicOn;
-  MG.gain.setTargetAtTime(musicOn?0.15:0,AC.currentTime,0.08);
-  musicBtn.textContent=musicOn?'🔊':'🔇';
-});
-
-reset();return;}
+  if(gs==='gameover'){reset();return;}
   if(gs!=='idle')return;
   const p=gpos(e),dx=p.x-REST.x,dy=p.y-REST.y;
   if(dx*dx+dy*dy<52*52){drag=true;gs='pulling';}
