@@ -35,14 +35,7 @@
 </head>
 <body>
 <div style="position:relative;display:inline-block;width:min(100%,calc(78vh*860/500));">
-<button id="musicBtn" title="Musique">
-<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#C8B99A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="12" r="10.5"/>
-  <polygon points="8,9 11,9 14.5,6.5 14.5,17.5 11,15 8,15" fill="#C8B99A" stroke="none"/>
-  <path d="M16.5 9.5 Q18.5 12 16.5 14.5" fill="none"/>
-  <path d="M18 7.5 Q21 12 18 16.5" fill="none"/>
-</svg>
-</button>
+<button id="musicBtn" title="Musique">🔊</button>
 <button id="fsBtn" title="Plein écran">⛶</button>
 <canvas id="gc" style="display:block;width:100%;border-radius:10px;cursor:crosshair;touch-action:none;"></canvas>
 </div>
@@ -723,7 +716,7 @@ function initMusic(){
   MG=AC.createGain();MG.gain.value=0.15;MG.connect(AC.destination);
   musicOn=true;
   AC.resume().then(()=>{loopNext=0;loopMusic();});
-  document.getElementById('musicBtn').innerHTML=svgOn;
+  document.getElementById('musicBtn').textContent='🔊';
 }
 
 // Résume le contexte si iOS le suspend en arrière-plan
