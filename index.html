@@ -7,7 +7,7 @@
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{width:100%;height:100%;background:#233b35;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-  canvas{display:block;width:min(100%,calc(78vh*860/500));border-radius:10px;cursor:crosshair;touch-action:none;}
+  canvas{display:block;border-radius:10px;cursor:crosshair;touch-action:none;}
   canvas.fake-fs{
     position:fixed!important;top:50%!important;left:50%!important;
     transform:translate(-50%,-50%)!important;
@@ -34,9 +34,11 @@
 </style>
 </head>
 <body>
+<div style="position:relative;display:inline-block;width:min(100%,calc(78vh*860/500));">
 <button id="musicBtn" title="Musique">🔊</button>
 <button id="fsBtn" title="Plein écran">⛶</button>
-<canvas id="gc"></canvas>
+<canvas id="gc" style="display:block;width:100%;border-radius:10px;cursor:crosshair;touch-action:none;"></canvas>
+</div>
 <script>
 const fsBtn=document.getElementById('fsBtn');
 let isFS=false;
